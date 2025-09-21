@@ -33,7 +33,7 @@ class UserDaoImplIT {
 
         System.setProperty("hibernate.hbm2ddl.auto", "create-drop");
 
-        HibernateUtil.shutdown(); // если вдруг был старый SessionFactory
+        HibernateUtil.shutdown(); 
         HibernateUtil.buildSessionFactory();
     }
 
