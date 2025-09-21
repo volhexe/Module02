@@ -1,8 +1,9 @@
 package com.example.app;
 
-import com.example.dao.UserDao;
 import com.example.dao.UserDaoImpl;
 import com.example.model.User;
+import com.example.service.UserService;
+import com.example.service.UserServiceImpl;
 import com.example.util.HibernateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +14,18 @@ import java.util.Scanner;
 
 public class ConsoleApp {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleApp.class);
-    private static final UserDao userDao = new UserDaoImpl();
+
+    private final UserService userService;
+
+    public ConsoleApp() {
+        this.userService = new UserServiceImpl(new UserDaoImpl());
+    }
 
     public static void main(String[] args) {
+        new ConsoleApp().run();
+    }
+
+    private void run() {
         LOGGER.info("Starting user-service application");
         Scanner scanner = new Scanner(System.in);
 
@@ -43,7 +53,7 @@ public class ConsoleApp {
         }
     }
 
-    private static void printMenu() {
+    private void printMenu() {
         System.out.println("\n=== User Service ===");
         System.out.println("1) Create user");
         System.out.println("2) List all users");
@@ -54,7 +64,7 @@ public class ConsoleApp {
         System.out.print("Select: ");
     }
 
-    private static void createUser(Scanner scanner) throws Exception {
+    private void createUser(Scanner scanner) throws Exception {
         System.out.print("Name: ");
         String name = scanner.nextLine().trim();
         System.out.print("Email: ");
@@ -62,56 +72,58 @@ public class ConsoleApp {
         System.out.print("Age: ");
         Integer age = Integer.valueOf(scanner.nextLine().trim());
 
-        User user = new User(name, email, age);
-        userDao.create(user);
+        User user = userService.createUser(name, email, age);
         System.out.println("Created: " + user);
     }
 
-    private static void listUsers() {
-        List<User> users = userDao.findAll();
+    private void listUsers() {
+        List<User> users = userService.getAllUsers();
         if (users.isEmpty()) System.out.println("No users found.");
         else users.forEach(System.out::println);
     }
 
-    private static void getUser(Scanner scanner) {
+    private void getUser(Scanner scanner) {
         System.out.print("Id: ");
         Long id = Long.valueOf(scanner.nextLine().trim());
-        Optional<User> u = userDao.findById(id);
+        Optional<User> u = userService.getUserById(id);
         u.ifPresentOrElse(System.out::println, () -> System.out.println("User not found"));
     }
 
-    private static void updateUser(Scanner scanner) throws Exception {
+    private void updateUser(Scanner scanner) throws Exception {
         System.out.print("Id: ");
         Long id = Long.valueOf(scanner.nextLine().trim());
-        Optional<User> opt = userDao.findById(id);
+        Optional<User> opt = userService.getUserById(id);
         if (opt.isEmpty()) {
             System.out.println("User not found");
             return;
         }
-        User user = opt.get();
-        System.out.println("Current: " + user);
+        User current = opt.get();
+        System.out.println("Current: " + current);
+
         System.out.print("New name (blank to keep): ");
         String name = scanner.nextLine();
-        if (!name.isBlank()) user.setName(name.trim());
+        if (name.isBlank()) name = current.getName();
+
         System.out.print("New email (blank to keep): ");
         String email = scanner.nextLine();
-        if (!email.isBlank()) user.setEmail(email.trim());
+        if (email.isBlank()) email = current.getEmail();
+
         System.out.print("New age (blank to keep): ");
         String ageStr = scanner.nextLine();
-        if (!ageStr.isBlank()) user.setAge(Integer.valueOf(ageStr.trim()));
+        Integer age = ageStr.isBlank() ? current.getAge() : Integer.valueOf(ageStr.trim());
 
-        userDao.update(user);
-        System.out.println("Updated: " + user);
+        User updated = userService.updateUser(id, name, email, age);
+        System.out.println("Updated: " + updated);
     }
 
-    private static void deleteUser(Scanner scanner) throws Exception {
+    private void deleteUser(Scanner scanner) throws Exception {
         System.out.print("Id: ");
         Long id = Long.valueOf(scanner.nextLine().trim());
-        boolean deleted = userDao.delete(id);
+        boolean deleted = userService.deleteUser(id);
         System.out.println(deleted ? "Deleted" : "User not found");
     }
 
-    private static void shutdown() {
+    private void shutdown() {
         System.out.println("Shutting down...");
         HibernateUtil.shutdown();
         LOGGER.info("Application stopped");
