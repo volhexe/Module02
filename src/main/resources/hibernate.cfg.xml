@@ -18,7 +18,8 @@
         <property name="hibernate.format_sql">true</property>
 
         <!-- DDL: update/create/validate/none -->
-        <property name="hbm2ddl.auto">update</property>
+<!--        <property name="hbm2ddl.auto">update</property>-->
+        <property name="hbm2ddl.auto">create-drop</property>
 
         <!-- Enable JDBC batch updates (optional) -->
         <property name="hibernate.jdbc.batch_size">20</property>

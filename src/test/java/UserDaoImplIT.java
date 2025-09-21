@@ -1,5 +1,3 @@
-
-
 import com.example.dao.UserDaoImpl;
 import com.example.model.User;
 import com.example.util.HibernateUtil;
@@ -14,8 +12,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class UserDaoImplIT {
+class UserDaoImplIT {
 
     @Container
     private static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
@@ -27,17 +24,26 @@ public class UserDaoImplIT {
     private UserDaoImpl userDao;
 
     @BeforeAll
-    void setup() {
+    static void beforeAll() {
+
         System.setProperty("hibernate.connection.url", POSTGRES_CONTAINER.getJdbcUrl());
         System.setProperty("hibernate.connection.username", POSTGRES_CONTAINER.getUsername());
         System.setProperty("hibernate.connection.password", POSTGRES_CONTAINER.getPassword());
 
-        HibernateUtil.getSessionFactory();
+
+        System.setProperty("hibernate.hbm2ddl.auto", "create-drop");
+
+        HibernateUtil.shutdown(); // если вдруг был старый SessionFactory
+        HibernateUtil.buildSessionFactory();
+    }
+
+    @BeforeEach
+    void setUp() {
         userDao = new UserDaoImpl();
     }
 
     @AfterAll
-    void teardown() {
+    static void afterAll() {
         HibernateUtil.shutdown();
     }
 
@@ -50,7 +56,6 @@ public class UserDaoImplIT {
         Optional<User> found = userDao.findById(created.getId());
         assertTrue(found.isPresent());
         assertEquals("Granny", found.get().getName());
-        System.out.println("1");
     }
 
     @Test
@@ -60,7 +65,6 @@ public class UserDaoImplIT {
 
         List<User> users = userDao.findAll();
         assertTrue(users.size() >= 2);
-        System.out.println("2");
     }
 
     @Test
@@ -69,7 +73,6 @@ public class UserDaoImplIT {
         user.setName("Tommy");
         User updated = userDao.update(user);
         assertEquals("Tommy", updated.getName());
-        System.out.println("3");
     }
 
     @Test
@@ -80,6 +83,5 @@ public class UserDaoImplIT {
 
         Optional<User> found = userDao.findById(user.getId());
         assertTrue(found.isEmpty());
-        System.out.println("4");
     }
 }
