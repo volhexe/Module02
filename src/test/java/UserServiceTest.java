@@ -42,7 +42,6 @@ class UserServiceTest {
         Optional<User> found = userService.getUserById(1L);
         assertTrue(found.isPresent());
         assertEquals("Mike", found.get().getName());
-
     }
 
     @Test
@@ -55,7 +54,6 @@ class UserServiceTest {
 
         List<User> result = userService.getAllUsers();
         assertEquals(2, result.size());
-
     }
 
     @Test
@@ -68,7 +66,6 @@ class UserServiceTest {
         assertEquals("New", updated.getName());
         assertEquals("new@example.com", updated.getEmail());
         assertEquals(45, updated.getAge());
-
     }
 
     @Test
@@ -76,6 +73,40 @@ class UserServiceTest {
         when(userDao.delete(1L)).thenReturn(true);
         boolean deleted = userService.deleteUser(1L);
         assertTrue(deleted);
-
     }
+
+
+    @Test
+    void testCreateUserThrowsException() throws Exception {
+        when(userDao.create(any(User.class))).thenThrow(new RuntimeException("Database error"));
+        assertThrows(RuntimeException.class, () -> {
+            userService.createUser("Anna", "Anna@example.com", 29);
+        });
+    }
+
+
+    @Test
+    void testGetUserByIdNotFound() {
+        when(userDao.findById(1L)).thenReturn(Optional.empty());
+        Optional<User> found = userService.getUserById(1L);
+        assertFalse(found.isPresent());
+    }
+
+
+    @Test
+    void testUpdateUserNotFound() {
+        when(userDao.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(Exception.class, () -> {
+            userService.updateUser(1L, "New", "new@example.com", 45);
+        });
+    }
+
+    @Test
+    void testDeleteUserThrowsException() throws Exception {
+        when(userDao.delete(1L)).thenThrow(new RuntimeException("Delete failed"));
+        assertThrows(RuntimeException.class, () -> {
+            userService.deleteUser(1L);
+        });
+    }
+
 }
