@@ -127,7 +127,7 @@ class UserControllerTest {
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isBadRequest()); // ожидаем 400
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -139,6 +139,6 @@ class UserControllerTest {
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().is5xxServerError()); // тк в сервисе выбрасывается RuntimeException
+                .andExpect(status().is5xxServerError());
     }
 }
