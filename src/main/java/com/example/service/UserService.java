@@ -11,4 +11,5 @@ public interface UserService {
     List<User> getAllUsers();
     User updateUser(Long id, String name, String email, Integer age) throws Exception;
     boolean deleteUser(Long id) throws Exception;
+
 }
