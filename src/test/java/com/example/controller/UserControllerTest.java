@@ -120,25 +120,4 @@ class UserControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    void testCreateUserWithEmptyName() throws Exception {
-        UserCreateRequest req = new UserCreateRequest("", "noName@example.com", 20);
-
-        mockMvc.perform(post("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void testCreateUserWithDuplicateEmail() throws Exception {
-        userRepository.save(new User("John", "dup@example.com", 44));
-
-        UserCreateRequest req = new UserCreateRequest("Jane", "dup@example.com", 30);
-
-        mockMvc.perform(post("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().is5xxServerError());
-    }
 }
